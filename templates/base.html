@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Viewer</title>
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <!-- JS Files -->
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <!-- Google web fonts -->
+    <link href="https://fonts.googleapis.com/css?family=PT+Sans+Narrow:400,700" rel='stylesheet' />
+    <!-- The main CSS file -->
+    <link href="css/base.css" rel="stylesheet" />
+    <style>
+        footer {
+            text-align: center;
+            padding: 10px;
+            background: #f1f1f1;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .loading {
+            display: none;
+            position: fixed;
+            top: 80%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.8em;
+            color: #f8f8f9;
+        }
+        .popup {
+            position: fixed;
+            top: 12.5%;
+            left: 12.5%;
+            width: 75%;
+            height: 75%;
+            background-color: #ECF9FF;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow: auto;
+            display: none;
+        }
+        .popup-content {
+            padding: 20px;
+            color: black; /* Ensure text is visible */
+            font-size: 16px;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: black; /* Ensure close button is visible */
+        }
+        .bottom-close-button {
+            display: block;
+            margin: 20px auto 0;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #034694;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .bottom-close-button:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        } /* Missing closing bracket added here */
+        #doc-content {
+            white-space: pre-wrap; /* Preserve spacing and line breaks */
+            text-align: left; /* Ensure text is left-aligned */
+            padding: 1em; /* Add padding to the content */
+        }
+
+        @media (max-width: 768px) {
+            .ui-tabs-vertical .ui-tabs-nav {
+                flex: 0 0 25%; /* Adjust for smaller screens */
+            }
+            .ui-tabs-vertical .ui-tabs-panel {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- MENU OVERLAY -->
+    <div class="overlay overlay-slide-left" id="overlay">
+        <!-- MENU ITEMS -->
+        <nav>
+            <ul>
+                <li id="nav-1" class="slide-out-1 center">
+                    <a href="#home" class="center" id="home-link">Home</a>
+                </li>
+                <li id="nav-2" class="slide-out-2 center">
+                    <a href="#doc" class="center">Documentation</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <!-- HAMBURGER MENU -->
+    <div class="hamburger-menu" id="hamburger-menu">
+        <div class="menu-bar1"></div>
+        <div class="menu-bar2"></div>
+    </div>
+    <!-- SECTIONS -->
+    <section id="home" class="center">
+        <p class="logo">JSON Visualizer</p>
+        <div class="container">
+            <label class="drop-container" id="dropcontainer">
+                <span class="drop-title">Drop Here or Click to Upload JSON or NDJSON</span>
+                <input type="file" id="json_" accept=".json,.ndjson" multiple required>
+                <div class="file-name" id="file-name">No file chosen</div>
+            </label>
+            <button class="confirm-button" id="confirm-button" disabled>View</button>
+        </div>
+    </section>
+    <div class="loading" id="loading">Loading...</div>
+    <section id="doc-popup" class="popup hidden">
+        <div class="popup-content">
+            <span class="close-button" id="close-button">&times;</span>
+            <div id="doc-content"></div>
+        </div>
+    </section>
+    <footer>
+        Deepika Senthilkumar, Sai Pooja V R, Swetha Rameswaran - Pfizer India
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('json_');
+            const loading = document.getElementById('loading');
+            const confirmButton = document.getElementById('confirm-button');
+            const fileNameDisplay = document.getElementById('file-name');
+            const docLink = document.querySelector('a[href="#doc"]');
+            const homeLink = document.getElementById('home-link');
+
+            // Function to update the confirm button state
+            const updateConfirmButtonState = () => {
+                confirmButton.disabled = fileInput.files.length === 0;
+            };
+
+            // Event listener for file input change
+            fileInput.addEventListener('change', () => {
+                const filenames = Array.from(fileInput.files).map(file => file.name).join(', ');
+                fileNameDisplay.textContent = filenames || 'No file chosen';
+                updateConfirmButtonState();
+            });
+
+            // Initial check to disable the confirm button if no files are selected
+            updateConfirmButtonState();
+
+            // Event listener for confirm button click
+            confirmButton.addEventListener('click', () => {
+                const files = fileInput.files;
+                const formData = new FormData();
+
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files', files[i]);
+                }
+                // Show loading spinner
+                loading.style.display = 'block';
+                fetch('/upload-files', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    // Redirect to the next page or handle the response as needed
+                    window.location.href = '/viewer';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Hide loading spinner in case of error
+                    loading.style.display = 'none';
+                });
+            }); // Closing bracket added here
+
+            // Event listener for documentation link click
+            const closeButton = document.getElementById('close-button');
+            const popup = document.getElementById('doc-popup');
+            const docContent = document.getElementById('doc-content');
+
+            if (docLink) {
+                docLink.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    fetch('/static/documentation.docx')
+                        .then(response => response.arrayBuffer())
+                        .then(data => {
+                            mammoth.convertToHtml({ arrayBuffer: data, includeDefaultStyleMap: true, preserveWhiteSpace: true })
+                            .then(result => {
+                                docContent.innerHTML = result.value;
+                                popup.style.display = 'block';
+                            })
+                                .catch(error => console.error('Error:', error));
+                        })
+                        .catch(error => console.error('Error:', error));
+                });
+            }
+
+            if (closeButton) {
+                closeButton.addEventListener('click', () => {
+                    popup.style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
