@@ -1,541 +1,841 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON Viewer - Tabs</title>
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/verticals.css') }}">
-    <!-- Google web fonts -->
-    <link href="https://fonts.googleapis.com/css?family=PT+Sans+Narrow:400,700" rel="stylesheet" />
-    <!-- jQuery Library -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- jQuery UI Library -->
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <!-- DataTables CSS and JS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
-    <script type="text/javascript" charset="utf8" src="https://cdn.jsdelivr.net/npm/yadcf@0.9.4/jquery.dataTables.yadcf.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css">
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
-    <!-- JS Files -->
-    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
-    <style>
-    html, body {
-        height: 100%;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        overflow-x: auto;
-        overflow-y: auto;
-        }
-        .logo {
-        position: absolute;
-        z-index: 1;
-        }
-        .hamburger-menu {
-            position: absolute;
-        }
-        .hidden {
-            display: none;
-        }
-        .dataTables_scrollHeadInner, .dataTables_scrollBody {
-            width: 100% !important;
-        }
-        .dt-button.clear-filters-btn {
-        background-color: #002f5c !important; /* Dark blue background */
-        color: white !important; /* White text */
-        border: none !important; /* Remove border */
-        padding: 10px 20px !important; /* Add padding */
-        border-radius: 5px !important; /* Rounded corners */
-        cursor: pointer !important; /* Pointer cursor on hover */
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important; /* Subtle shadow */
-        transition: all 0.3s ease !important; /* Smooth transition */
-    }
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href ="{{ url_for('static',filename='image/images_ico.png')}}">
+        <title>JSON Viewer - Tabs</title>
+        <!-- CSS Files -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/verticals.css') }}">
+        <!-- Google web fonts -->
+        <link href="https://fonts.googleapis.com/css?family=PT+Sans+Narrow:400,700" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <!-- jQuery Library -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <!-- jQuery UI Library -->
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <!-- DataTables CSS and JS -->
 
-    .dt-button.clear-filters-btn:hover {
-        background-color: #1a65ac !important; /* Lighter blue on hover */
-    }
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.jsdelivr.net/npm/yadcf@0.9.4/jquery.dataTables.yadcf.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css">
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+        <!-- JS Files -->
+        <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+        <style>
+            html, body {
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                overflow-x: auto;
+                overflow-y: auto;
+                }
+            .dropdown {
+                font-size: 16px !important;
+                margin:0;
+                padding: 0;
+<!--                margin-right: 100px !important;-->
+                cursor: pointer;
+                user-select: none;
+            }
+            .dropdown-content {
+                display: none;
+<!--                text-align: left !important;-->
+                margin-left: -20px !important; /* Ensure no left margin */
+                padding-left: 0; /* Ensure no left padding */
+            }
 
-    .dt-button.clear-filters-btn:active,
-    .dt-button.clear-filters-btn:focus {
-        background-color: #1a65ac !important; /* Lighter blue on click and focus */
-        color: white !important; /* Ensure text stays white */
-        outline: none !important; /* Remove outline */
-    }
+            .dropdown-content pre {
+                margin: 0; /* Ensure no margin */
+                padding: 0; /* Ensure no padding */
+<!--                text-align: left; /* Ensure text is left-aligned */-->
+                white-space: pre-wrap; /* Preserve formatting */
+            }
 
-    .dataTables_wrapper .dataTables_filter input {
-        font-weight: bold; /* Make the text bold */
-        padding: 10px 20px; /* Add padding */
-        border-radius: 5px; /* Rounded corners */
-        border: 1px solid #ccc; /* Light gray border */
-        background-color: #f9f9f9; /* Light gray background */
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-        transition: all 0.3s ease; /* Smooth transition */
-    }
+            .dropdown.open .dropdown-content {
+                font-size: 15px !important;
+                text-align: left !important;
+                margin-left: 50px !important; /* Ensure no left margin */
+                display: block;
+                padding-top: 5px !important; /* Adjust padding as needed */
+                padding-bottom: 5px !important; /* Adjust padding as needed */
+                margin-top: -70px !important; /* Adjust margin as needed */
+                margin-bottom: -70px !important; /* Adjust margin as needed */
+            }
+            pre {
+                margin: 0;
+                padding: 0;
+                float: none !important;
+                text-align: left;
+                background-color: #f9f9f9;
+                border: 1px solid #ccc;
+                overflow-x: auto;
+                white-space: pre;
+                font-family: monospace;
+                tab-size: 2;
+            }
+            .toggle-button {
+                margin-bottom: 10px;
+                padding: 5px 10px;
+                cursor: pointer;
+                font-size: 16px !important;
+                background-color: #002f5c;
+                color: white;
+                border: none;
+                border-radius: 5px;
+            }
+            .dictionary {
+                max-height: calc(100vh - 60px);
+                overflow-x: auto;
+                white-space: pre;
+                font-family: monospace;
+<!--                padding: 10px;-->
+                background-color: #ffffff;
+                text-align: left;
+            }
+            .raw-json-tab {
+                height: 100px;
+                overflow-y: auto;
+            }
+            #parent > div {
+                width: 100%;
+                background: rgba(255, 255, 255, 0.5);
+            }
+            .logo {
+                position: absolute;
+                z-index: 1;
+            }
+            .hamburger-menu {
+                position: absolute;
+            }
+            .hidden {
+                display: none;
+            }
+            .dataTables_scrollHeadInner, .dataTables_scrollBody {
+                width: 100% !important;
+            }
+            .dt-button.download-current-btn,
+            .dt-button.download-all-btn,
+            .dt-button.clear-filters-btn {
+                background-color: #002f5c !important;
+                color: white !important;
+                border: none !important;
+                padding: 10px 20px !important;
+                border-radius: 5px !important;
+                cursor: pointer !important;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+                transition: all 0.3s ease !important;
+            }
+            .dt-button.download-current-btn:hover,
+            .dt-button.download-all-btn:hover,
+            .dt-button.clear-filters-btn:hover {
+                background-color: #1a65ac !important;
+            }
+            .dt-button.download-current-btn:active,
+            .dt-button.download-all-btn:active,
+            .dt-button.clear-filters-btn:active,
+            .dt-button.download-current-btn:focus,
+            .dt-button.download-all-btn:focus,
+            .dt-button.clear-filters-btn:focus {
+                background-color: #1a65ac !important;
+                color: white !important;
+                outline: none !important;
+            }
+            .dataTables_wrapper .dataTables_filter input {
+                font-weight: bold;
+                padding: 10px 20px;
+                border-radius: 5px;
+                border: 1px solid #ccc;
+                background-color: #f9f9f9;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+            }
+            .dataTables_wrapper .dataTables_filter input:focus {
+                border-color: #002f5c;
+                box-shadow: 0 2px 4px rgba(0, 47, 92, 0.5);
+                outline: none;
+            }
+            .dataTables_wrapper .dataTables_filter label {
+                font-weight: bold;
+            }
+            #loading-icon {
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 9999;
+                background-color: rgba(255, 255, 255, 0.8);
+                padding: 20px;
+                border-radius: 10px;
+                text-align: center;
+                font-size: 18px;
+                color: #333;
+            }
+            @-webkit-keyframes spin {
+                0% { -webkit-transform: rotate(0deg); }
+                100% { -webkit-transform: rotate(360deg); }
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            #loading-screen {
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                background: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            }
 
-    .dataTables_wrapper .dataTables_filter input:focus {
-        border-color: #002f5c; /* Dark blue border on focus */
-        box-shadow: 0 2px 4px rgba(0, 47, 92, 0.5); /* Dark blue shadow on focus */
-        outline: none;
-      }
+            .spinner {
+                border: 16px solid #002f5c;
+                border-top: 16px solid #1a65ac;
+                border-radius: 50%;
+                width: 120px;
+                height: 120px;
+                animation: spin 2s linear infinite;
+            }
 
-    .dataTables_wrapper .dataTables_filter label {
-        font-weight: bold;
-        }
-
-
-        .collapsible {
-            cursor: pointer;
-            padding: 10px;
-            border: none;
-            text-align: left;
-            outline: none;
-            font-size: 15px;
-            width: 100%;
-        }
-        .active, .collapsible:hover {
-            background-color: #ccc;
-        }
-        .container {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* Prevent overflow from child elements */
-        }
-
-        .fixed-element {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-        }
-
-    .flex-container {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .wide-element {
-        width: 100%;
-        box-sizing: border-box; /* Include padding and border in the element's total width */
-    }
-    .ui-tabs-vertical { width: 100%; height: 100%; background: transparent; }
-    .ui-tabs-vertical .ui-tabs-nav {flex: 0 0 15%; float: left; width: 15%; height: 100%; background: transparent; overflow-y: auto; overflow-x: hidden; }
-    .ui-tabs-vertical .ui-tabs-nav li { clear: left; width: 100%; background: #002f5c; color: white; padding: 15px; margin-bottom: 5px; font-size: 1.25em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ui-tabs-vertical .ui-tabs-nav li a { color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ui-tabs-vertical .ui-tabs-panel {flex: 1; float: right; width: 85%; height: 100%; background: rgba(255, 255, 255, 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .center { text-align: center; }
-    .logo {
-        position: absolute;
-        z-index: 1;
-    }
-    #parent, .child { height: 82%; width: 100%; background: transparent; border: none; }
-    #parent > div { height: 120%; width: 100%; background: rgba(255, 255, 255, 0.5); }
-    .ui-tabs .ui-tabs-nav li.ui-tabs-active { background: #1a65ac; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-<!--    .ui-tabs .ui-tabs-nav li.ui-tabs-active a { color: white; overflow: hidden; text-overflow: ellipsis; }-->
-    .ui-tabs .ui-tabs-panel { height: 100%; background: rgba(255, 255, 255, 0.5); }
-    #parent > ul.ui-tabs-nav { font-size: 1.5em; }
-    footer {
-        margin-top: auto;
-        text-align: center;
-        padding: 10px;
-        font-size: 30px
-        background: rgba(255, 255, 255, 0.0);
-        position: fixed;
-        bottom: 0;
-    }
-    .content {
-            padding: 0 18px;
-            display: none;
-            overflow: hidden;
-            background-color: #f9f9f9;
-        }
-        .triangle {
-            display: inline-block;
-            margin-right: 10px;
-            transition: transform 0.3s;
-        }
-        .triangle.down {
-            transform: rotate(90deg);
-        }
-        .expand-all {
-            margin: 10px 0;
-            padding: 10px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            font-size: 15px;
-        }
-        .clear-filters {
-            position: absolute;
-            right: 250px;;
-            margin: 1px 0;
-            padding: 5px 10px;
-            cursor: pointer;
-            background-color: #6f7074;
-            color: white;
-            border: black;
-            font-size: 15px;
-        }
-    .table-container {
-        overflow-x: auto;
-        max-height: cal(100vh- 60px);
-        table-layout: fixed;
-        width: 100%;
-        overflow: hidden;
-        background: white; /* Set background to white */
-    }
-    .table-container table{
-    width: 100%; /* Adjust as needed */
-    white-space: nowrap;
-    }
-        .popup {
-            position: fixed;
-            top: 12.5%;
-            left: 12.5%;
-            width: 75%;
-            height: 75%;
-            background-color: #ECF9FF;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            overflow: auto;
-            display: none;
-        }
-
-        .popup-content {
-            padding: 20px;
-            color: black; /* Ensure text is visible */
-            font-size: 16px;
-            white-space: pre-wrap;
-        }
-
-        .close-button {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 24px;
-            cursor: pointer;
-            color: black; /* Ensure close button is visible */
-        }
-
-
-        .dataTables_length {
-            display: none;
-        }
-
-
-        #doc-content {
-            white-space: pre-wrap; /* Preserve spacing and line breaks */
-            text-align: left; /* Ensure text is left-aligned */
-            padding: 1em; /* Add padding to the content */
-        }
-        @media (max-width: 768px) {
+            .collapsible {
+                cursor: pointer;
+                padding: 10px;
+                border: none;
+                text-align: left;
+                outline: none;
+                font-size: 15px;
+                width: 100%;
+            }
+            .active, .collapsible:hover {
+                background-color: #ccc;
+            }
+            .container {
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            .fixed-element {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
+            .flex-container {
+                display: flex;
+                flex-wrap: wrap;
+            }
+            .wide-element {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .ui-tabs-vertical {
+                width: 100%;
+                height: 100%;
+                background: transparent;
+            }
             .ui-tabs-vertical .ui-tabs-nav {
-                flex: 0 0 25%; /* Adjust for smaller screens */
+                flex: 0 0 15%;
+                float: left;
+                width: 15%;
+                height: 100%;
+                background: transparent;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            .ui-tabs-vertical .ui-tabs-nav li {
+                clear: left;
+                width: 100%;
+                background: #002f5c;
+                color: white;
+                padding: 15px;
+                margin-bottom: 5px;
+                font-size: 1.25em;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .ui-tabs-vertical .ui-tabs-nav li a {
+                color: white;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             .ui-tabs-vertical .ui-tabs-panel {
                 flex: 1;
+                float: right;
+                width: 85%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.5);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .center {
+                text-align: center;
+            }
+            .logo {
+                position: absolute;
+                z-index: 1;
+            }
+            #parent, .child {
+                height: 82%;
+                width: 100% ;
+                margin: 0;
+                padding: 0;
+                position: relative;
+                background: transparent;
+                border: none;
+            }
+            #parent > div {
+                height: 120%;
+                width: 100%;
+                background: rgba(255, 255, 255, 0.5);
+            }
+            .ui-tabs .ui-tabs-nav li.ui-tabs-active {
+                background: #1a65ac;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .ui-tabs .ui-tabs-panel {
+                height: 100%;
+                background: rgba(255, 255, 255, 0.5);
+            }
+            #parent > ul.ui-tabs-nav {
+                font-size: 1.5em;
             }
 
+            footer {
+                margin-top: auto;
+                text-align: center;
+                padding: 10px;
+                font-size: 30px
+                background: rgba(255, 255, 255, 0.0);
+                position: fixed;
+                bottom: 0;
+            }
+            .content {
+                    padding: 0 18px;
+                    display: none;
+                    overflow: hidden;
+                    background-color: #f9f9f9;
+                }
+            .triangle {
+                display: inline-block;
+                padding:0;
+                margin-right: 10px;
+                transition: transform 0.3s;
+            }
+            .triangle.down {
+                transform: rotate(90deg);
+            }
+            .expand-all {
+                margin: 10px 0;
+                padding: 10px;
+                cursor: pointer;
+                background-color: #002f5c;
+                color: white;
+                border: none;
+                font-size: 15px;
+            }
+            .clear-filters {
+                position: absolute;
+                right: 250px;;
+                margin: 1px 0;
+                padding: 5px 10px;
+                cursor: pointer;
+                background-color: #6f7074;
+                color: white;
+                border: black;
+                font-size: 15px;
+            }
+            .table-container {
+                overflow-x: auto;
+                max-height: cal(100vh- 60px);
+                table-layout: fixed;
+                width: 100%;
+                overflow: hidden;
+                background: white;
+            }
+            .table-container table{
+                width: 100%;
+                white-space: nowrap;
+            }
+            .popup {
+                position: fixed;
+                top: 12.5%;
+                left: 12.5%;
+                width: 75%;
+                height: 75%;
+                background-color: #ECF9FF;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+                overflow: auto;
+                display: none;
+            }
 
-        }
-  </style>
-</head>
-<body>
-    <body class="hidden">
-<!-- MENU OVERLAY -->
+            .popup-content {
+                padding: 20px;
+                color: black;
+                font-size: 16px;
+                white-space: pre-wrap;
+            }
+
+            .close-button {
+                position: absolute;
+                top: 10px;
+                right: 20px;
+                font-size: 24px;
+                cursor: pointer;
+                color: black;
+            }
+            .dataTables_length {
+                display: none;
+            }
+            .child-align {
+                max-height: 635px;
+                overflow-y:scroll;
+                /* white-space: pre-wrap;        overflow-x: auto; */ */
+                position: absolute;
+                box-sizing: border-box;
+                top: 0;
+                right:10px !important;
+                left: 10px !important;
+                margin: 0;
+                padding: 0;
+            }
+            .child-align .ui-tabs-panel {
+                overflow-y:scroll !important;
+                width: 100% !important;
+                float: none !important;
+            }
+            .dictionary pre {
+                white-space: pre-wrap; /* Ensure the content wraps within the container */
+            }
+            #doc-content {
+                white-space: pre-wrap;
+                text-align: left;
+                padding: 1em;
+            }
+            @media (max-width: 1200px) {
+                .ui-tabs-vertical .ui-tabs-nav {
+                    flex: 0 0 25%;
+                }
+                .ui-tabs-vertical .ui-tabs-panel {
+                    flex: 1;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- MENU OVERLAY -->
+        <div id="loading-screen">
+            <div class="spinner"></div>
+        </div>
         <div class="overlay overlay-slide-left" id="overlay">
           <!-- MENU ITEMS -->
-          <nav>
-            <ul>
-              <li id="nav-1" class="slide-out-1 center">
-                <a href="#home" class="center" id = "home-link">Home</a>
-              </li>
-              <li id="nav-2" class="slide-out-2 center">
-                <a href="#doc" class="center">Documentation</a>
-              </li>
-            </ul>
-          </nav>
+            <nav>
+                <ul>
+                    <li id="nav-1" class="slide-out-1 center">
+                        <a href="#home" class="center" id = "home-link">Home</a>
+                    </li>
+                    <li id="nav-2" class="slide-out-2 center">
+                        <a href="#doc" class="center">Documentation</a>
+                    </li>
+                </ul>
+            </nav>
         </div>
         <!-- HAMBURGER MENU -->
         <div class="hamburger-menu" id="hamburger-menu">
-          <div class="menu-bar1"></div>
-          <div class="menu-bar2"></div>
+            <div class="menu-bar1"></div>
+            <div class="menu-bar2"></div>
         </div>
-<!-- SECTIONS -->
-<section id="home" class="center">
-    <p class="logo">
-<!--        <img src="static/css/PFE.D.png" alt="Logo" class="logo-image">-->
-        JSON Visualizer
-    </p>
-    <div id="parent">
-        <ul>
+        <!-- SECTIONS -->
+        <section id="home" class="center">
+            <p class="logo">
+                JSON Visualizer
+            </p>
+            <div id="parent">
+                <ul>
                     <li><a href="#parent-1">Raw Json</a></li>
                     <li><a href="#parent-2">MetaData</a></li>
                     <li><a href="#parent-3">Data</a></li>
-        </ul>
-        <div id="parent-1" class="child">
+                </ul>
+                <div id="parent-1" class="child">
                     <div class="child">
                         <ul class="child-nav">
                             {% for filename in filenames %}
                             <li><a href="#dict-tab-{{ loop.index }}">{{ filename }}</a></li>
                             {% endfor %}
                         </ul>
-                        <div class="child-content">
+                        <div class="ui-tabs-panel child-align">
                             {% for filename in filenames %}
-                            <div id="dict-tab-{{ loop.index }}" class="table-container">
-                                <button class="expand-all">Expand All</button>
-                                <div>
-                                    {% for key, value in json_data.items() %}
-                                    <button class="collapsible">
-                                        <span class="triangle">&#9654;</span>{{ key }}
-                                    </button>
-                                    <div class="content">
-                                        {% if key == 'columns' %}
-                                        {% for column in value %}
-                                        <button class="collapsible">
-                                            <span class="triangle">&#9654;</span>{{ column.index }}
-                                        </button>
-                                        <div class="content">
-                                            <pre>{{ column | tojson(indent=2) }}</pre>
-                                        </div>
-                                        {% endfor %}
-                                        {% elif key == 'rows' %}
-                                        {% for row in value %}
-                                        <button class="collapsible">
-                                            <span class="triangle">&#9654;</span>Row {{ loop.index }}
-                                        </button>
-                                        <div class="content">
-                                            <pre>{{ row }}</pre>
-                                        </div>
-                                        {% endfor %}
-                                        {% elif value is mapping %}
-                                        {% for subkey, subvalue in value.items() %}
-                                        <button class="collapsible">
-                                            <span class="triangle">&#9654;</span>{{ subkey }}
-                                        </button>
-                                        <div class="content">
-                                            {% if subvalue is mapping %}
-                                            {% for subsubkey, subsubvalue in subvalue.items() %}
-                                            <button class="collapsible">
-                                                <span class="triangle">&#9654;</span>{{ subsubkey }}
-                                            </button>
-                                            <div class="content">
-                                                <p>{{ subsubvalue }}</p>
+                            <div id="dict-tab-{{ loop.index }}">
+                                <button class="toggle-button" id="toggle-all">Expand All</button>
+                                <pre>{% for key, value in json_data[filename].items() %}
+                                    <div class="dropdown">
+                                        <span class="dropdown-toggle">&#9654; {{ key }}</span>
+                                            <div class="dropdown-content">
+                                                {% macro remove_square_brackets(value) %}
+                                                    {% if value is string and value.startswith('[') and value.endswith(']') %}
+                                                        {{ value[1:-1] }}
+                                                    {% else %}
+                                                        {{ value }}
+                                                    {% endif %}
+                                                {% endmacro %}
+                                                {% if value is mapping or value is sequence %}
+                                                    {{ value | tojson(indent=40) }}
+                                                {% else %}
+                                                    {{ remove_square_brackets(value) }}
+                                                {% endif %}
                                             </div>
-                                            {% endfor %}
-                                            {% else %}
-                                            <p>{{ subvalue }}</p>
-                                            {% endif %}
                                         </div>
-                                        {% endfor %}
-                                        {% else %}
-                                        <p>{{ value }}</p>
-                                        {% endif %}
-                                    </div>
                                     {% endfor %}
-                                </div>
+                                </pre>
                             </div>
                             {% endfor %}
                         </div>
                     </div>
                 </div>
                 <div id="parent-2" class="child">
-            <div class="child">
-                <ul class="child-nav">
-                    {% for filename in filenames %}
-                    <li><a href="#meta-tab-{{ loop.index }}">{{ filename }}</a></li>
-                    {% endfor %}
-                </ul>
-                <div class="child-content">
-                    {% for filename in filenames %}
-                    <div id="meta-tab-{{ loop.index }}" class="table-container">
-                        {{ meta[filename]|safe }}
+                    <div class="child">
+                        <ul class="child-nav">
+                            {% for filename in filenames %}
+                            <li><a href="#meta-tab-{{ loop.index }}">{{ filename }}</a></li>
+                            {% endfor %}
+                        </ul>
+                        <div class="child-content">
+                            {% for filename in filenames %}
+                            <div id="meta-tab-{{ loop.index }}" class="table-container">
+                                {{ meta[filename]|safe }}
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                    {% endfor %}
                 </div>
-            </div>
-        </div>
                 <div id="parent-3" class="child">
-            <div class="child">
-                <ul class="child-nav">
-                    {% for filename in filenames %}
-                    <li><a href="#tab-{{ loop.index }}">{{ filename }}</a></li>
-                    {% endfor %}
-                </ul>
-                <div class="child-content">
-                    {% for filename in filenames %}
-                    <div id="tab-{{ loop.index }}" class="table-container">
-                        {{ tables[filename]|safe }}
+                    <div class="child">
+                        <ul class="child-nav">
+                            {% for filename in filenames %}
+                            <li><a href="#tab-{{ loop.index }}">{{ filename }}</a></li>
+                            {% endfor %}
+                        </ul>
+                        <div class="child-content">
+                            {% for filename in filenames %}
+                            <div id="tab-{{ loop.index }}" class="table-container">
+                                {{ tables[filename]|safe }}
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                    {% endfor %}
                 </div>
             </div>
-        </div>
+        </section>
+        <section id="doc-popup" class="popup hidden">
+            <div class="popup-content">
+                <span class="close-button" id="close-button">&times;</span>
+                <div id="doc-content"></div>
             </div>
-</section>
-<section id="doc-popup" class="popup hidden">
-    <div class="popup-content">
-        <span class="close-button" id="close-button">&times;</span>
-        <div id="doc-content"></div>
-<!--                <button class="bottom-close-button" id="bottom-close-button">Close</button>-->
-    </div>
-</section>
-<footer>
-    Deepika Senthilkumar, Sai Pooja V R, Swetha Rameswaran - Pfizer India
-</footer>
-<script>
-$(function () {
-    $("#parent").tabs();
-    $(".child").tabs().addClass("ui-tabs-vertical ui-helper-clearfix");
-    $(".child li").removeClass("ui-corner-top").addClass("ui-corner-left");
-
-    // Initialize DataTables for each table
-    $(".table-container table.data, .table-container table.metadata").each(function() {
-        var table = $(this).DataTable({
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    text: 'Clear All Filters',
-                    className: 'clear-filters-btn',
-                    action: function (e, dt, node, config) {
-                        table.search('').columns().search('').draw();
-                    }
-                }
-            ],
-            scrollY: false, // Disable internal vertical scrolling
-            scrollX: true,
-            paging: true,
-            searching: true,
-            ordering: true,
-            pageLength: 14,
-            lengthChange: false,
-            fixedHeader: true,
-            autoWidth: true,
-            responsive: true
-        });
-
-        setTimeout(function() {
-            table.columns.adjust().draw();
-        }, 500);
-
-        var columnCount = table.columns().header().length;
-        var yadcfSettings = [];
-        for (var i = 0; i < columnCount; i++) {
-            yadcfSettings.push({ column_number: i, filter_type: "select" });
-        }
-
-        yadcf.init(table, yadcfSettings);
-
-        var tableContainer = $(this).closest('.table-container');
-        tableContainer.find('.clear-filters').prop('disabled', false).on('click', function() {
-            yadcf.exResetAllFilters(table);
-        });
-    });
-    // Collapsible functionality
-    var coll = document.getElementsByClassName('collapsible');
-    var expandAllBtn = document.querySelector('.expand-all');
-
-    for (var i = 0; i < coll.length; i++) {
-        coll[i].addEventListener('click', function() {
-            this.classList.toggle('active');
-            var content = this.nextElementSibling;
-            var triangle = this.querySelector('.triangle');
-            if (content.style.display === 'block') {
-                content.style.display = 'none';
-                triangle.classList.remove('down');
-            } else {
-                content.style.display = 'block';
-                triangle.classList.add('down');
-            }
-        });
-    }
-
-    expandAllBtn.addEventListener('click', function() {
-        var allExpanded = expandAllBtn.textContent === 'Collapse All';
-        for (var i = 0; i < coll.length; i++) {
-            var content = coll[i].nextElementSibling;
-            var triangle = coll[i].querySelector('.triangle');
-            if (allExpanded) {
-                content.style.display = 'none';
-                triangle.classList.remove('down');
-            } else {
-                content.style.display = 'block';
-                triangle.classList.add('down');
-            }
-        }
-        expandAllBtn.textContent = allExpanded ? 'Expand All' : 'Collapse All';
-    });
-
-    $('body').removeClass('hidden');
-
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
-        $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust().draw();
-    });
-
-    // Event listener for documentation link click
+        </section>
+        <footer>
+            Deepika Senthilkumar, Sai Pooja V R, Swetha Rameswaran - Pfizer India
+        </footer>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+    const toggleAllButton = document.getElementById('toggle-all');
+    const dropdowns = document.querySelectorAll('.dropdown');
     const docLink = document.querySelector('a[href="#doc"]');
     const closeButton = document.getElementById('close-button');
     const popup = document.getElementById('doc-popup');
     const docContent = document.getElementById('doc-content');
+    const homeLink = document.getElementById('home-link');
 
-    if (docLink) {
-        docLink.addEventListener('click', (event) => {
-            event.preventDefault();
-            fetch('/static/documentation.docx')
-                .then(response => response.arrayBuffer())
-                .then(data => {
-                    mammoth.convertToHtml({ arrayBuffer: data, includeDefaultStyleMap: true, preserveWhiteSpace: true })
+    window.addEventListener('load', function() {
+        document.getElementById('loading-screen').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+    });
+
+    if (toggleAllButton) {
+        toggleAllButton.addEventListener('click', () => {
+            const expand = toggleAllButton.textContent === 'Expand All';
+            dropdowns.forEach(dropdown => {
+                const toggle = dropdown.querySelector('.dropdown-toggle');
+                if (expand) {
+                    dropdown.classList.add('open');
+                    toggle.innerHTML = '&#9660; ' + toggle.innerHTML.slice(2);
+                } else {
+                    dropdown.classList.remove('open');
+                    toggle.innerHTML = '&#9654; ' + toggle.innerHTML.slice(2);
+                }
+            });
+            toggleAllButton.textContent = expand ? 'Collapse All' : 'Expand All';
+        });
+    } else {
+        console.error('Toggle All button not found');
+    }
+
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const parent = toggle.parentElement;
+            parent.classList.toggle('open');
+            toggle.innerHTML = parent.classList.contains('open') ? '&#9660; ' + toggle.innerHTML.slice(2) : '&#9654; ' + toggle.innerHTML.slice(2);
+        });
+    });
+
+    $(function () {
+        $("#parent").tabs();
+        $(".child").tabs().addClass("ui-tabs-vertical ui-helper-clearfix");
+        $(".child li").removeClass("ui-corner-top").addClass("ui-corner-left");
+
+        // Initialize DataTables for each table
+        $(document).ready(function() {
+            $(".table-container table.data, .table-container table.metadata").each(function() {
+                var table = $(this).DataTable({
+                    dom: 'Bfrtip',
+                    processing: true,
+                    language: {
+                        processing: "<span class='fa-stack fa-lg'><i class='fa fa-spinner fa-spin fa-stack-2x fa-fw'></i></span>&emsp;Processing..."
+                    },
+                    buttons: [
+                        {
+                            text: 'Download Current Table',
+                            className: 'download-current-btn',
+                            action: function (e, dt, node, config) {
+                                console.log('Download Current Table button clicked');
+                                var tableContainer = $(node).closest('.table-container');
+                                var parentTab = tableContainer.closest('.ui-tabs-panel:visible');
+                                var parentTabId = parentTab.attr('id');
+                                console.log('Parent Tab ID:', parentTabId);
+                                var tableType = parentTabId.includes('meta') ? 'metadata' : 'data';
+                                console.log('Determined Table Type:', tableType);
+                                var activeTab = tableContainer.closest('.child').find('.child-nav .ui-tabs-active a');
+                                var filename = activeTab.text().trim();
+                                console.log('Extracted Filename:', filename);
+                                if (!filename) {
+                                    console.error('Filename is empty');
+                                    return;
+                                }
+                                $('#loading-icon').show();
+                                console.log('Loading icon shown');
+                                console.log('Sending AJAX request');
+                                $.ajax({
+                                    url: '/download_current',
+                                    type: 'POST',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify({ filename: filename, type: tableType }),
+                                    xhrFields: {
+                                        responseType: 'blob'
+                                    },
+                                    success: function(response) {
+                                        console.log('AJAX request successful');
+                                        var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                                        var link = document.createElement('a');
+                                        link.href = window.URL.createObjectURL(blob);
+                                        link.download = filename + '_' + tableType + '.xlsx';
+                                        link.click();
+                                        $('#loading-icon').hide();
+                                        console.log('Loading icon hidden');
+                                    },
+                                    error: function(xhr, status, error) {
+                                        console.error('Error:', error);
+                                        $('#loading-icon').hide();
+                                        console.log('Loading icon hidden');
+                                    }
+                                });
+                            }
+                        },
+                        {
+                            text: 'Download All Tables',
+                            className: 'download-all-btn',
+                            action: function (e, dt, node, config) {
+                                $('#loading-icon').show();
+                                console.log('Loading icon shown');
+                                $.ajax({
+                                    url: '/download_all',
+                                    type: 'POST',
+                                    xhrFields: {
+                                        responseType: 'blob'
+                                    },
+                                    success: function(response) {
+                                        console.log('AJAX request successful');
+                                        var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                                        var link = document.createElement('a');
+                                        link.href = window.URL.createObjectURL(blob);
+                                        link.download = 'all_tables.xlsx';
+                                        link.click();
+                                        $('#loading-icon').hide();
+                                        console.log('Loading icon hidden');
+                                    },
+                                    error: function(xhr, status, error) {
+                                        console.error('Error:', error);
+                                        $('#loading-icon').hide();
+                                        console.log('Loading icon hidden');
+                                    }
+                                });
+                            }
+                        },
+                        {
+                            text: 'Clear All Filters',
+                            className: 'clear-filters-btn',
+                            action: function (e, dt, node, config) {
+                                table.search('').columns().search('').draw();
+                            }
+                        }
+                    ],
+                    scrollY: false,
+                    scrollX: true,
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    pageLength: 14,
+                    lengthChange: false,
+                    fixedHeader: true,
+                    autoWidth: true,
+                    responsive: true,
+                    initComplete: function() {
+                        $('.clear-filters-btn').after('<div id="loading-icon" style="display:none;"><span class="fa-stack fa-lg"><i class="fa fa-spinner fa-spin fa-stack-2x fa-fw"></i></span> Loading...</div>');
+                    }
+                });
+
+                setTimeout(function() {
+                    table.columns.adjust().draw();
+                }, 500);
+
+                var columnCount = table.columns().header().length;
+                var yadcfSettings = [];
+                for (var i = 0; i < columnCount; i++) {
+                    yadcfSettings.push({ column_number: i, filter_type: "select" });
+                }
+
+                yadcf.init(table, yadcfSettings);
+
+                var tableContainer = $(this).closest('.table-container');
+                tableContainer.find('.clear-filters').prop('disabled', false).on('click', function() {
+                    yadcf.exResetAllFilters(table);
+                });
+            });
+        });
+
+        // Collapsible functionality
+        var coll = document.getElementsByClassName('collapsible');
+        var expandAllBtn = document.querySelector('.expand-all');
+
+        for (var i = 0; i < coll.length; i++) {
+            coll[i].addEventListener('click', function() {
+                this.classList.toggle('active');
+                var content = this.nextElementSibling;
+                var triangle = this.querySelector('.triangle');
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                    triangle.classList.remove('down');
+                } else {
+                    content.style.display = 'block';
+                    triangle.classList.add('down');
+                }
+            });
+        }
+
+        if (expandAllBtn) {
+            expandAllBtn.addEventListener('click', function() {
+                var allExpanded = expandAllBtn.textContent === 'Collapse All';
+                for (var i = 0; i < coll.length; i++) {
+                    var content = coll[i].nextElementSibling;
+                    var triangle = coll[i].querySelector('.triangle');
+                    if (allExpanded) {
+                        content.style.display = 'none';
+                        triangle.classList.remove('down');
+                    } else {
+                        content.style.display = 'block';
+                        triangle.classList.add('down');
+                    }
+                }
+                expandAllBtn.textContent = allExpanded ? 'Expand All' : 'Collapse All';
+            });
+        } else {
+            console.error('Expand All button not found');
+        }
+
+        $('body').removeClass('hidden');
+
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+            $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust().draw();
+        });
+
+        // Event listener for documentation link click
+        if (docLink) {
+            docLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                console.log('Documentation link clicked');
+                fetch('/static/documentation.docx')
+                    .then(response => response.arrayBuffer())
+                    .then(data => {
+                        mammoth.convertToHtml({ arrayBuffer: data })
                             .then(result => {
                                 docContent.innerHTML = result.value;
                                 popup.style.display = 'block';
                             })
-                        .then(result => {
-                            docContent.innerHTML = result.value;
-                            popup.style.display = 'block';
-                        })
-                        .catch(error => console.error('Error:', error));
-                })
-                .catch(error => console.error('Error:', error));
-        });
-    }
+                            .catch(error => console.error('Error:', error));
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        } else {
+            console.error('Documentation link element not found');
+        }
 
-    if (closeButton) {
-        closeButton.addEventListener('click', () => {
-            popup.style.display = 'none';
-        });
-    }
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                popup.style.display = 'none';
+            });
+        } else {
+            console.error('Close button element not found');
+        }
 
-    function goBackToBase() {
-        fetch('/go-back-to-base', {
-            method: 'POST'
-        }).then(response => {
-            if (response.ok) {
-                return response.text();
-            } else {
-                console.error('Failed to delete files and go back to base');
-            }
-        }).then(html => {
-            document.open();
-            document.write(html);
-            document.close();
-        }).catch(error => {
-            console.error('Error:', error);
-        });
-    }
+        // Home functionality
+        function goBackToBase() {
+            fetch('/go-back-to-base', {
+                method: 'POST'
+            }).then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    console.error('Failed to delete files and go back to base');
+                }
+            }).then(html => {
+                document.open();
+                document.write(html);
+                document.close();
+                history.pushState(null, '', '/');
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
 
-    document.getElementById('home-link').addEventListener('click', function(event) {
-        event.preventDefault();
-        goBackToBase();
+        if (homeLink) {
+            homeLink.addEventListener('click', function(event) {
+                event.preventDefault();
+                console.log('Home link clicked');
+                goBackToBase();
+            });
+        } else {
+            console.error('Home link element not found');
+        }
     });
 });
-</script>
+
+        </script>
+
     </body>
 </html>

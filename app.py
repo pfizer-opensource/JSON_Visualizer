@@ -1,32 +1,19 @@
-from flask import render_template, request, jsonify, Flask
+from flask import render_template, request, jsonify, Flask, send_file
 import os
 import glob
 import json
 import json_to_df as jd
 import pandas as pd
-import os
-from celery import Celery
+import io
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
+DATA_FOLDER = 'data'
+METADATA_FOLDER = "metadata"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(DATA_FOLDER, exist_ok=True)
+os.makedirs(METADATA_FOLDER, exist_ok=True)
 
-# Configure Celery
-def make_celery(app):
-    celery = Celery(
-        app.import_name,
-        backend=app.config['CELERY_RESULT_BACKEND'],
-        broker=app.config['CELERY_BROKER_URL']
-    )
-    celery.conf.update(app.config)
-    return celery
-
-app.config.update(
-    CELERY_BROKER_URL='redis://localhost:6379/0',
-    CELERY_RESULT_BACKEND='redis://localhost:6379/0'
-)
-
-celery = make_celery(app)
 
 @app.route("/")
 def index():
@@ -35,15 +22,15 @@ def index():
 
 @app.route('/upload-files', methods=['POST'])
 def upload_files():
-    current_directory = '.'
-    specific_folder = 'uploads'  # Replace with your folder name
+    specific_folder = ['uploads','data','metadata']
     def remove_files_in_directory(directory):
         files = os.listdir(directory)
         for file in files:
             file_path = os.path.join(directory, file)
             if os.path.isfile(file_path):
                 os.remove(file_path)
-    remove_files_in_directory(specific_folder)
+    for folder in specific_folder:
+        remove_files_in_directory(folder)
     if 'files' not in request.files:
         return jsonify({'message': 'No files part in the request'}), 400
 
@@ -73,17 +60,18 @@ def next_page():
     path = './uploads'
     tables = {}
     meta = {}
+    json_data = {}
 
     for filename in filenames:
         print(filename)
         if filename.split('.')[-1] == 'ndjson':
-            json_data = jd.ndjson_conversion(path+'/'+filename)
+            json_data[filename] = jd.ndjson_conversion(path+'/'+filename)
         else:
             with open(path+'/'+filename, 'r', encoding='iso-8859-1') as f:
-                json_data = json.load(f)
-        xdf = jd.create_xpt(json_data)
+                json_data[filename] = json.load(f)
+        xdf = jd.create_xpt(json_data[filename])
         meta_dict = {'itemOID':[],'name':[],'label':[],'dataType':[],'targetDataType':[],'displayFormat':[],'length':[],'keySequence':[]}
-        col_info = json_data['columns']
+        col_info = json_data[filename]['columns']
         for i in range(len(col_info)):
             for k in meta_dict.keys():
                 if k in col_info[i]:
@@ -96,6 +84,13 @@ def next_page():
         table_html = xdf.to_html(classes='data', header="true", index=False)
         tables[filename] = table_html
 
+        modified_filename = filename.replace('.', '_')
+        data_excel_path = os.path.join(DATA_FOLDER, f"{modified_filename}_data.xlsx")
+        meta_excel_path = os.path.join(METADATA_FOLDER, f"{modified_filename}_metadata.xlsx")
+        xdf.to_excel(data_excel_path, index=False)
+        meta_df.to_excel(meta_excel_path, index=False)
+
+
     return render_template('viewer.html', filenames=filenames, tables=tables, meta=meta, json_data=json_data)
 
 @app.route('/process-file/<filename>')
@@ -104,24 +99,64 @@ def process_file(filename):
     return jsonify({'message': 'File processing started'}), 202
 
 
+@app.route('/download_current', methods=['POST'])
+def download_current():
+    data = request.get_json()
+    filename = data.get('filename')
+    print(filename)
+    table_type = data.get('type')
+    print(table_type)
+
+    app.logger.info(f"Received request for filename: {filename}, type: {table_type}")
+
+    if not filename or not table_type:
+        return jsonify({'message': 'Invalid request'}), 400
+
+    if table_type == 'metadata':
+        folder = METADATA_FOLDER
+    else:
+        folder = DATA_FOLDER
+
+    file_path = os.path.join(folder, f"{filename.replace('.', '_')}_{table_type}.xlsx")
+
+    app.logger.info(f"Constructed file path: {file_path}")
+
+    if not os.path.exists(file_path):
+        app.logger.error(f"File not found: {file_path}")
+        return jsonify({'message': 'File not found'}), 404
+
+    return send_file(file_path, download_name=f"{filename}_{table_type}.xlsx", as_attachment=True)
+
+@app.route('/download_all', methods=['POST'])
+def download_all():
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+
+    for folder, table_type in [(DATA_FOLDER, 'data'), (METADATA_FOLDER, 'metadata')]:
+        for file in os.listdir(folder):
+            if file.endswith('.xlsx'):
+                sheet_name = file.replace(f"_{table_type}.xlsx", "").replace('_', '.')
+                df = pd.read_excel(os.path.join(folder, file))
+                df.to_excel(writer, sheet_name=f"{sheet_name}_{table_type}", index=False)
+
+    writer.close()
+    output.seek(0)
+
+    return send_file(output, download_name='all_tables.xlsx', as_attachment=True)
+
 @app.route('/go-back-to-base', methods=['POST'])
 def go_back_to_base():
-    # Delete files from the folder
-    folder_path = 'uploads/'
-    files = glob.glob(os.path.join(folder_path, '*'))
-    for f in files:
-        os.remove(f)
-    # Render the base.html template
+    folder_path = ['uploads/','data/','metadata/']
+    for folder in folder_path:
+        files = glob.glob(os.path.join(folder, '*'))
+        for f in files:
+            os.remove(f)
     return render_template('base.html')
 
 @app.route('/home')
 def home():
     return redirect(url_for('index'))
 
-@celery.task
-def process_file_task(filename):
-    # Your file processing logic here
-    pass
 
 if __name__ == "__main__":
     app.run(debug=False)
