@@ -1,0 +1,23 @@
+[JSON Viewer Hackathon]
+name = "JSON Visualizer"
+version = "1.1"
+description = "JSON Visualizer, a versatile Python-based web application designed for viewing Dataset-JSON files. This tool is compatible with files adhering to the JSON 1.1 schema and supports both JSON and NDJSON formats."
+authors = [{ name = "Swetha Rameswaran", email = "swetha.rameswaran@pfizer.com" },{ name = "Sai Pooja VR", email = "saipooja.vr@pfizer.com" },{ name = "Deepika S", email = "deepika.s@pfizer.com" }]
+maintainers = [{ name = "Swetha Rameswaran", email = "swetha.rameswaran@pfizer.com" },{ name = "Sai Pooja VR", email = "saipooja.vr@pfizer.com" },{ name = "Deepika S", email = "deepika.s@pfizer.com" }]
+readme = "README.md"
+license = { file = "Apache-2.0" }
+keywords = ["dataset", "json", "CDISC", "python","interface", "viewer", "ndjson"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Reviewers",
+    "Topic :: Software Development :: Build Tools",
+    "License :: OSI Approved :: Apache-2.0 License",
+    "Programming Language :: Python :: 3.10",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "Flask == 2.2.2",
+    "pandas == 2.2.3",
+    "numpy == 1.22.4",
+    "jsonlines == 4.0.0"
+]
