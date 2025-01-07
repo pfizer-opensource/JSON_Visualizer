@@ -1,6 +1,6 @@
 # JSON_Visualizer
    
-   A versatile Python-based web application designed for viewing Dataset-JSON files. This tool is compatible with files adhering to the JSON 1.1 schema and supports both JSON and NDJSON formats. This guide will help you get started and maximize your use of this tool.
+   A versatile Python-based (Python 3.10) web application designed for viewing Dataset-JSON files. This tool is compatible with files adhering to the JSON 1.1 schema and supports both JSON and NDJSON formats. This guide will help you get started and maximize your use of this tool.
 
 # Authors:
   1.	Deepika Senthilkumar
